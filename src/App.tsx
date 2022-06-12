@@ -2,7 +2,7 @@ import React from 'react';
 import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
 import { useQuery } from 'react-query';
 //API Calls
-import { fetchNearbyPlaces } from './api';
+import { fetchNearbyPlaces, fetchWeather } from './api';
 // Map Settings
 import { containerStyle, center, options } from './settings';
 //Image
@@ -18,6 +18,11 @@ export type MarkerType = {
   website: string;
 }
 
+export type WeatherType = {
+  temp: number,
+  text: string;
+}
+
 const App: React.FC = () => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -28,6 +33,8 @@ const App: React.FC = () => {
   const mapRef = React.useRef<google.maps.Map<Element> | null>(null);
 
   const [clickedPos, setClickedPos] = React.useState<google.maps.LatLngLiteral>({} as google.maps.LatLngLiteral)
+  const [selectedMarker, setSelectedMarker] = React.useState<MarkerType>({} as MarkerType);
+
 
   const {
     data: nearbyPositions,
@@ -38,6 +45,16 @@ const App: React.FC = () => {
     refetchOnWindowFocus: false
   });
 
+const {
+  data: markerWeather,
+  isLoading: isLoadingMarkerWeather,
+  isError: isErrorMarkerWeather
+} = useQuery([selectedMarker.id], () => fetchWeather(selectedMarker), {
+  enabled: !!selectedMarker.id,
+  refetchOnWindowFocus: false,
+  staleTime: 60 * 1000 * 5 // 5 minutes
+})
+
   const onLoad = (map: google.maps.Map<Element>): void => {
     mapRef.current = map;
   }
@@ -47,10 +64,11 @@ const App: React.FC = () => {
   }
 
   const onMapClick = (e: google.maps.MapMouseEvent) => {
-    setClickedPos({ lat: e.latLng.lat(), lng: e.latLng.lng() })
+    setClickedPos({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+    setSelectedMarker({} as MarkerType);
   }
 
-  const onMarkerClick = (marker: MarkerType) => console.log(marker);
+  const onMarkerClick = (marker: MarkerType) => setSelectedMarker(marker);
 
   if (!isLoaded) return<div>Map loading </div>;
 
@@ -80,6 +98,26 @@ const App: React.FC = () => {
             }}
             />
           ))}
+          {selectedMarker.location && (
+            <InfoWindow
+            position={selectedMarker.location}
+            onCloseClick={() => setSelectedMarker({} as MarkerType)}
+            >
+              <div>
+                <h3>{selectedMarker.name}</h3>
+                  {isLoadingMarkerWeather ? (
+                    <p>Loading weather...</p>
+                  ) : (
+                    <>
+                    <p>{markerWeather?.text}</p>
+                    <p>{markerWeather?.temp} &#xb0;F</p>
+                    </>
+                  )}
+              </div>
+
+            </InfoWindow>
+          )}
+
       </GoogleMap>
     </Wrapper>
   );
