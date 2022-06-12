@@ -5,6 +5,8 @@ import { useQuery } from 'react-query';
 import { fetchNearbyPlaces, fetchWeather } from './api';
 // Map Settings
 import { containerStyle, center, options } from './settings';
+//Components
+import CurrentLocation from './components/CurrentLocation';
 //Image
 import beerIcon from './images/beer.svg';
 // Styles
@@ -55,6 +57,15 @@ const {
   staleTime: 60 * 1000 * 5 // 5 minutes
 })
 
+  const moveTo = (position: google.maps.LatLngLiteral) => {
+    if (mapRef.current) {
+      mapRef.current.panTo({ lat: position.lat, lng: position.lng});
+      mapRef.current.setZoom(15);
+      setClickedPos(position);
+    }
+  }
+
+
   const onLoad = (map: google.maps.Map<Element>): void => {
     mapRef.current = map;
   }
@@ -74,6 +85,7 @@ const {
 
   return (
     <Wrapper>
+      <CurrentLocation moveTo={moveTo} />
       <GoogleMap
         mapContainerStyle={containerStyle}
         options={options as google.maps.MapOptions}
