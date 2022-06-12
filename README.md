@@ -1,6 +1,7 @@
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Project modeled after Weibenfalk's "React Google Maps - Geolocation with React and Typescript" tutorial [here](https://www.youtube.com/watch?v=I9F-CMiKOz4)
 
 ## Available Scripts
 
