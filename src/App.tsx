@@ -5,6 +5,8 @@ import { useQuery } from 'react-query';
 import { fetchNearbyPlaces } from './api';
 // Map Settings
 import { containerStyle, center, options } from './settings';
+//Image
+import beerIcon from './images/beer.svg';
 // Styles
 import { Wrapper, LoadingView } from './App.styles';
 
@@ -48,6 +50,8 @@ const App: React.FC = () => {
     setClickedPos({ lat: e.latLng.lat(), lng: e.latLng.lng() })
   }
 
+  const onMarkerClick = (marker: MarkerType) => console.log(marker);
+
   if (!isLoaded) return<div>Map loading </div>;
 
   return (
@@ -62,7 +66,20 @@ const App: React.FC = () => {
         onClick={onMapClick}      
         >
 
-          {}
+          {clickedPos.lat ? <Marker position={clickedPos} /> : null}
+          {nearbyPositions?.map(marker => (
+            <Marker
+            key={marker.id}
+            position={marker.location}
+            onClick={() => onMarkerClick(marker)}
+            icon={{
+              url: beerIcon,
+              // origin: new window.google.maps.Point(0, 0),
+              // anchor: new window.google.maps.Point(15, 15),
+              scaledSize: new window.google.maps.Size(30, 30)
+            }}
+            />
+          ))}
       </GoogleMap>
     </Wrapper>
   );
